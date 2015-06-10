@@ -16,22 +16,23 @@
 
 @implementation NSDate (HumanizedTime)
 
-- (NSString *) stringWithHumanizedTimeDifference:(NSDateHumanizedType) humanizedType withFullString:(BOOL) fullStrings
-{
-    NSTimeInterval timeInterval = [self timeIntervalSinceNow];
+- (NSString *) stringWithHumanizedTimeDifference:(NSDateHumanizedType) humanizedType withFullString:(BOOL) fullStrings endDate:(NSDate*)endDate{
+    
+    NSTimeInterval timeInterval = [endDate
+                                   timeIntervalSinceNow];
     
     int secondsInADay = 3600*24;
     int secondsInAWeek =  3600*24*7;
     int secondsInAMonth =  3600*24*30; //To fix, not precise
     int secondsInAYear = 3600*24*365;
-    int yearsDiff = abs(timeInterval/secondsInAYear);
-    int monthsDiff = abs(timeInterval/secondsInAMonth);
-    int weeksDiff = abs(timeInterval/secondsInAWeek);
-    int daysDiff = abs(timeInterval/secondsInADay);
-    int hoursDiff = abs((abs(timeInterval) - (daysDiff * secondsInADay)) / 3600);
-    int minutesDiff = abs((abs(timeInterval) - ((daysDiff * secondsInADay) + (hoursDiff * 60))) / 60);
-    int secondsDiff = abs((abs(timeInterval) - ((daysDiff * secondsInADay) + (minutesDiff * 60))));
-  
+    int yearsDiff = fabs(timeInterval/secondsInAYear);
+    int monthsDiff = fabs(timeInterval/secondsInAMonth);
+    int weeksDiff = fabs(timeInterval/secondsInAWeek);
+    int daysDiff = fabs(timeInterval/secondsInADay);
+    int hoursDiff = fabs((fabs(timeInterval) - (daysDiff * secondsInADay)) / 3600);
+    int minutesDiff = fabs((fabs(timeInterval) - ((daysDiff * secondsInADay) + (hoursDiff * 60))) / 60);
+    int secondsDiff = fabs((fabs(timeInterval) - ((daysDiff * secondsInADay) + (minutesDiff * 60))));
+    
     NSString *yearString;
     NSString *dateString;
     NSString *weekString;
@@ -46,24 +47,24 @@
     NSString *full_hourString;
     NSString *full_minuteString;
     NSString *full_secondString;
-  
+    
     NSDateFormatter *yearDateFormatter = [[NSDateFormatter alloc] init];
     yearDateFormatter.dateFormat = @"YYYY-MM-dd";
-  
+    
     NSDateFormatter *full_yearDateFormatter = [[NSDateFormatter alloc] init];
     full_yearDateFormatter.dateFormat = @"YYYY-MM-dd";
-  
+    
     NSDateFormatter *dateDateFormatter = [[NSDateFormatter alloc] init];
     dateDateFormatter.dateFormat = @"dd MMM.";
-  
+    
     NSDateFormatter *full_dateDateFormatter = [[NSDateFormatter alloc] init];
     full_dateDateFormatter.dateFormat = @"dd MMMM";
-
+    
     NSDateFormatter *dayFormatter = [[NSDateFormatter alloc] init];
     [dayFormatter setDateFormat: (fullStrings) ? @"EEEE" : @"EEE"];
-
+    
     NSString *translation_table = (fullStrings) ? LOCALISABLE_FULL : LOCALISABLE_SHORT;
-  
+    
     //NSDateHumanizedSuffixNone
     yearString   = [yearDateFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:timeInterval]];
     dateString   = [dateDateFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:timeInterval]];
@@ -90,97 +91,103 @@
     full_secondString = [NSString stringWithFormat:@"%d %@%@", secondsDiff,
                          NSLocalizedStringFromTable(@"SecondKey", translation_table, @""),
                          (secondsDiff == 1) ? @"" : @"s"];
-  
+    
     switch (humanizedType)
     {
-      default: break;
-      case NSDateHumanizedSuffixLeft:
-      {
-        if(!fullStrings)
+        default: break;
+        case NSDateHumanizedSuffixLeft:
         {
-          yearString   = [SUFFIX_UNTIL stringByAppendingString:yearString];
-          dateString   = [SUFFIX_UNTIL stringByAppendingString:dateString];
-          weekString   = [weekString stringByAppendingString:PREFIX_LEFT];
-          dayString    = [dayString stringByAppendingString:PREFIX_LEFT];
-          hourString   = [hourString stringByAppendingString:PREFIX_LEFT];
-          minuteString = [minuteString stringByAppendingString:PREFIX_LEFT];
-          secondString = [secondString stringByAppendingString:PREFIX_LEFT];
+            if(!fullStrings)
+            {
+                yearString   = [SUFFIX_UNTIL stringByAppendingString:yearString];
+                dateString   = [SUFFIX_UNTIL stringByAppendingString:dateString];
+                weekString   = [weekString stringByAppendingString:PREFIX_LEFT];
+                dayString    = [dayString stringByAppendingString:PREFIX_LEFT];
+                hourString   = [hourString stringByAppendingString:PREFIX_LEFT];
+                minuteString = [minuteString stringByAppendingString:PREFIX_LEFT];
+                secondString = [secondString stringByAppendingString:PREFIX_LEFT];
+            }
+            else
+            {
+                full_yearString   = [SUFFIX_UNTIL stringByAppendingString:full_yearString];
+                full_dateString   = [SUFFIX_UNTIL stringByAppendingString:full_dateString];
+                full_weekString   = [full_weekString stringByAppendingString:PREFIX_LEFT];
+                full_dayString    = [full_dayString stringByAppendingString:PREFIX_LEFT];
+                full_hourString   = [full_hourString stringByAppendingString:PREFIX_LEFT];
+                full_minuteString = [full_minuteString stringByAppendingString:PREFIX_LEFT];
+                full_secondString = [full_secondString stringByAppendingString:PREFIX_LEFT];
+            }
+            break;
         }
-        else
+        case NSDateHumanizedSuffixAgo:
         {
-          full_yearString   = [SUFFIX_UNTIL stringByAppendingString:full_yearString];
-          full_dateString   = [SUFFIX_UNTIL stringByAppendingString:full_dateString];
-          full_weekString   = [full_weekString stringByAppendingString:PREFIX_LEFT];
-          full_dayString    = [full_dayString stringByAppendingString:PREFIX_LEFT];
-          full_hourString   = [full_hourString stringByAppendingString:PREFIX_LEFT];
-          full_minuteString = [full_minuteString stringByAppendingString:PREFIX_LEFT];
-          full_secondString = [full_secondString stringByAppendingString:PREFIX_LEFT];
+            if(!fullStrings)
+            {
+                weekString   = [weekString stringByAppendingString:PREFIX_AGO];
+                dayString    = [dayString stringByAppendingString:PREFIX_AGO];
+                hourString   = [hourString stringByAppendingString:PREFIX_AGO];
+                minuteString = [minuteString stringByAppendingString:PREFIX_AGO];
+                secondString = [secondString stringByAppendingString:PREFIX_AGO];
+            }
+            else
+            {
+                full_weekString   = [full_weekString stringByAppendingString:PREFIX_AGO];
+                full_dayString    = [full_dayString stringByAppendingString:PREFIX_AGO];
+                full_hourString   = [full_hourString stringByAppendingString:PREFIX_AGO];
+                full_minuteString = [full_minuteString stringByAppendingString:PREFIX_AGO];
+                full_secondString = [full_secondString stringByAppendingString:PREFIX_AGO];
+            }
+            break;
         }
-        break;
-      }
-      case NSDateHumanizedSuffixAgo:
-      {
-        if(!fullStrings)
-        {
-          weekString   = [weekString stringByAppendingString:PREFIX_AGO];
-          dayString    = [dayString stringByAppendingString:PREFIX_AGO];
-          hourString   = [hourString stringByAppendingString:PREFIX_AGO];
-          minuteString = [minuteString stringByAppendingString:PREFIX_AGO];
-          secondString = [secondString stringByAppendingString:PREFIX_AGO];
-        }
-        else
-        {
-          full_weekString   = [full_weekString stringByAppendingString:PREFIX_AGO];
-          full_dayString    = [full_dayString stringByAppendingString:PREFIX_AGO];
-          full_hourString   = [full_hourString stringByAppendingString:PREFIX_AGO];
-          full_minuteString = [full_minuteString stringByAppendingString:PREFIX_AGO];
-          full_secondString = [full_secondString stringByAppendingString:PREFIX_AGO];
-        }
-        break;
-      }
     }
-  
+    
     if (yearsDiff > 1)
     {
-     return (fullStrings)? full_yearString : yearString;
+        return (fullStrings)? full_yearString : yearString;
     }
-  
+    
     if (monthsDiff > 0)
     {
-      return (fullStrings)? full_dateString : dateString;
+        return (fullStrings)? full_dateString : dateString;
     }
     else
     {
-      if (weeksDiff > 0)
-      {
-        return (fullStrings)? full_weekString : weekString;
-      }
-      else
-      {
-        if (daysDiff > 0 && daysDiff <= 4)
+        if (weeksDiff > 0)
         {
-          return [dayFormatter stringFromDate:self];
-        }
-        else if (daysDiff > 4)
-        {
-          return (fullStrings)? full_dayString : dayString;
+            return (fullStrings)? full_weekString : weekString;
         }
         else
         {
-          if (hoursDiff == 0)
-          {
-            if (minutesDiff == 0)
-              return (fullStrings)? full_secondString : secondString;
+            if (daysDiff > 0 && daysDiff <= 4)
+            {
+                return [dayFormatter stringFromDate:self];
+            }
+            else if (daysDiff > 4)
+            {
+                return (fullStrings)? full_dayString : dayString;
+            }
             else
-              return (fullStrings)? full_minuteString : minuteString;
-          }
-          else
-          {
-            return (fullStrings)? full_hourString : hourString;
-          }
+            {
+                if (hoursDiff == 0)
+                {
+                    if (minutesDiff == 0)
+                        return (fullStrings)? full_secondString : secondString;
+                    else
+                        return (fullStrings)? full_minuteString : minuteString;
+                }
+                else
+                {
+                    return (fullStrings)? full_hourString : hourString;
+                }
+            }
         }
     }
-  }
+    
+}
+
+- (NSString *) stringWithHumanizedTimeDifference:(NSDateHumanizedType) humanizedType withFullString:(BOOL) fullStrings
+{
+    return [self stringWithHumanizedTimeDifference:humanizedType withFullString:fullStrings endDate:self];
 }
 
 @end

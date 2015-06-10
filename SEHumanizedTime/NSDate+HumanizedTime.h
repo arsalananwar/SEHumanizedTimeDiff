@@ -19,6 +19,8 @@ typedef NS_ENUM(NSInteger, NSDateHumanizedType)
 
 - (NSString *) stringWithHumanizedTimeDifference:(NSDateHumanizedType) humanizedType withFullString:(BOOL) fullStrings;
 
+- (NSString *) stringWithHumanizedTimeDifference:(NSDateHumanizedType) humanizedType withFullString:(BOOL) fullStrings endDate:(NSDate*)endDate;
+
 @end
 
 // end
